@@ -37,7 +37,8 @@ EMAIL=you@company.com```
 ### 4. Run
 ``` python app.py```
 
-requirements.txt
+### requirements.txt
+
 ```
 telebot
 databricks-sdk
@@ -47,7 +48,7 @@ schedule
 certifi
 ```
 
-##Security notes
+## Security notes
 Never commit .env or any token.
 The bot only lists jobs created by the e-mail in EMAIL.
 Repair uses your personal token and respects Databricks RBAC.
