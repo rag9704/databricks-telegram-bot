@@ -54,7 +54,7 @@ certifi
 ```
 
 ## Security notes
-Never commit .env or any token.
-The bot only lists jobs created by the e-mail in EMAIL.
-Repair uses your personal token and respects Databricks RBAC.
+1. Never commit .env or any token.
+2. The bot only lists jobs created by the e-mail in EMAIL.
+3. Repair uses your personal token and respects Databricks RBAC.
 
