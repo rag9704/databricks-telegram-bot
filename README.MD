@@ -19,7 +19,8 @@ Get instant notifications, check today’s run status, repair failed jobs, or pa
  3. A Telegram bot token from @BotFather
 
 ### 2. Clone & install
- ```git clone git@github.com:rag9704/databricks-telegram-bot.git
+ ```
+ git clone git@github.com:rag9704/databricks-telegram-bot.git
  cd databricks-telegram-bot/telegram-bot
  python -m venv venv
  source venv/bin/activate
@@ -28,14 +29,18 @@ Get instant notifications, check today’s run status, repair failed jobs, or pa
 
 ### 3. Configure
 Create a .env file in telegram-bot/:
-```BOT_TOKEN=123456:ABC...
+```
+BOT_TOKEN=123456:ABC...
 CHAT_ID=-1001234567890
 DATABRICKS_SERVER=https://dbc-1234.cloud.databricks.com
 DATABRICKS_TOKEN=dapi...
-EMAIL=you@company.com```
+EMAIL=you@company.com
+```
 
 ### 4. Run
-``` python app.py```
+``` 
+python app.py
+```
 
 ### requirements.txt
 
