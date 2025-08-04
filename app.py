@@ -303,17 +303,23 @@ def repair_databricks_job(run_id):
     w = _ws()
     try:
         resp = w.jobs.repair_run(run_id, rerun_all_failed_tasks=True)
-        bot.send_message(
+
+    except Exception: 
+        try:
+        resp = w.jobs.repair_run(run_id,latest_run_id=run_id rerun_all_failed_tasks=True)
+        
+        except Exception as e:
+            bot.send_message(CHAT_ID, f"❌ Repair failed: {e}")
+
+    bot.send_message(
             CHAT_ID,
             f"✅ Repair started!\nOriginal: `{run_id}`\nRepair run: `{resp.run_id}`",
         )
-    except Exception as e:
-        bot.send_message(CHAT_ID, f"❌ Repair failed: {e}")
 
 # ------------------------------------------------------------------
 # Scheduler
 # ------------------------------------------------------------------
-times = ("07:45","08:30","09:30","11:00","12:00","13:00","15:00","18:00","20:00","23:30")
+times = ("07:45","08:30","09:30","11:00","12:00","13:00","15:00","18:00","20:00",,"23:30")
 for t in times:
     schedule.every().day.at(t).do(databricks_job_notification)
 
@@ -326,7 +332,9 @@ if __name__ == "__main__":
         format="%(asctime)s %(levelname)s %(message)s",
     )
     databricks_job_notification()  # first run
+
+    polling_thread = threading.Thread(target=bot.polling,kwargs={"none_stop":True},daemon=True)
+    polling_thread.start()
     while True:
         schedule.run_pending()
-        bot.polling(none_stop=True)
         time.sleep(1)
