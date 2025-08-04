@@ -2,7 +2,7 @@
 """
 author : anurag pal
 """
-
+import threading, signal, sys, time, schedule
 import os
 import logging
 import json
@@ -302,39 +302,57 @@ def check_job_today_status(job_id):
 def repair_databricks_job(run_id):
     w = _ws()
     try:
-        resp = w.jobs.repair_run(run_id, rerun_all_failed_tasks=True)
-
-    except Exception: 
-        try:
-            resp = w.jobs.repair_run(run_id,latest_run_id=run_id,rerun_all_failed_tasks=True)
+        resp = w.jobs.repair_run(
+                run_id,
+                rerun_all_failed_tasks=True
+            )
+        # first attempt – with latest_repair_id
         
+    except Exception:
+        # second attempt – without latest_repair_id
+        try:
+            resp = w.jobs.repair_run(
+            run_id,
+            latest_repair_id=run_id,
+            rerun_all_failed_tasks=True
+        )
+            
         except Exception as e:
             bot.send_message(CHAT_ID, f"❌ Repair failed: {e}")
+            return
 
+    # if we reach here, one of the calls succeeded
     bot.send_message(
-            CHAT_ID,
-            f"✅ Repair started!\nOriginal: `{run_id}`\nRepair run: `{resp.run_id}`",
-        )
+        CHAT_ID,
+        f"✅ Repair started!\nOriginal: `{run_id}`\nRepair run: `{resp.run_id}`",
+    )
 
-# ------------------------------------------------------------------
-# Scheduler
-# ------------------------------------------------------------------
-times = ("07:45","08:30","09:30","11:00","12:00","13:00","15:00","18:00","20:00","23:30")
+
+times = ("07:45", "08:30", "09:30", "11:00", "12:00",
+         "13:00", "15:00", "18:00", "20:20", "23:30")
+
 for t in times:
     schedule.every().day.at(t).do(databricks_job_notification)
 
-# ------------------------------------------------------------------
-# Entry-point
-# ------------------------------------------------------------------
+
+
+
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
     )
-    databricks_job_notification()  # first run
 
-    polling_thread = threading.Thread(target=bot.polling,kwargs={"none_stop":True},daemon=True)
+    # First run
+    databricks_job_notification()
+
+    # Start Telegram polling in a daemon thread
+    polling_thread = threading.Thread(
+        target=bot.polling, kwargs={"none_stop": True}, daemon=True
+    )
     polling_thread.start()
+
+    # Main loop for the scheduler
     while True:
         schedule.run_pending()
         time.sleep(1)
