@@ -306,7 +306,7 @@ def repair_databricks_job(run_id):
 
     except Exception: 
         try:
-        resp = w.jobs.repair_run(run_id,latest_run_id=run_id rerun_all_failed_tasks=True)
+            resp = w.jobs.repair_run(run_id,latest_run_id=run_id rerun_all_failed_tasks=True)
         
         except Exception as e:
             bot.send_message(CHAT_ID, f"❌ Repair failed: {e}")
