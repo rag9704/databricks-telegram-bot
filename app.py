@@ -16,12 +16,19 @@ import requests
 import schedule
 import telebot
 from telebot import types
+from telebot import apihelper
+
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.jobs import RunResultState
 from dotenv import load_dotenv
 
 os.environ["SSL_CERT_FILE"] = certifi.where()
 load_dotenv()
+
+
+# Increase read/connect timeout for long polling
+apihelper.READ_TIMEOUT = 60
+apihelper.CONNECT_TIMEOUT = 10
 
 # ------------------------------------------------------------------
 # Config
@@ -335,7 +342,16 @@ for t in times:
     schedule.every().day.at(t).do(databricks_job_notification)
 
 
-
+def polling_worker():
+    while True:
+        try:
+            bot.polling(non_stop=True, timeout=60, long_polling_timeout=50)
+        except requests.exceptions.ReadTimeout:
+            logging.warning("ReadTimeout from Telegram API, retrying in 5s...")
+            time.sleep(5)
+        except Exception as e:
+            logging.exception(f"Polling error: {e}")
+            time.sleep(5)
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -347,9 +363,7 @@ if __name__ == "__main__":
     databricks_job_notification()
 
     # Start Telegram polling in a daemon thread
-    polling_thread = threading.Thread(
-        target=bot.polling, kwargs={"none_stop": True}, daemon=True
-    )
+    polling_thread = threading.Thread(target=polling_worker, daemon=True)
     polling_thread.start()
 
     # Main loop for the scheduler
